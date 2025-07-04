@@ -12,13 +12,13 @@ NoU_Motor intakeMotor(5);
 float intakeT = 0;
 
 NoU_Servo stageI(1);
-float angleI = stowI;
+float angleI = positions[9][0];
 NoU_Servo stageII(2);
-float angleII = stowII;
-NoU_Servo claw(3);
+float angleII = positions[9][1];
+NoU_Servo clawServo(3);
 float clawAngle = AI;
 
-int armState = 0;
+int setpoint = 0;
 int clawState = 0;
 // This creates the drivetrain object, you shouldn't have to mess with this
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
@@ -41,14 +41,13 @@ unsigned long lastPrintTime = 0;
 
 void loop() {
   chassis();
-  pickup();
-  scoreCoral();
-  scoreAlgea();
+  arm();
+  claw();
   intake();
   intakeMotor.set(intakeT);
   stageI.write(angleI);
   stageII.write(angleII);
-  claw.write(clawAngle);
+  clawServo.write(clawAngle);
 }
 
 void chassis() {
@@ -92,18 +91,46 @@ void chassis() {
   }
 }
 
-void pickup() {
+void arm() {
+  if(PestoLink.buttonHeld(BUTTON_BOTTOM)){
+    setpoint = 1; //L1
+  } else if(PestoLink.buttonHeld(BUTTON_LEFT)){
+    setpoint = 2; //L2
+  } else if(PestoLink.buttonHeld(BUTTON_RIGHT)){
+    setpoint = 3; //L3
+  } else if(PestoLink.buttonHeld(BUTTON_TOP)){
+    setpoint = 4; //L4
+  } else if(PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(LEFT_TRIGGER)){
+    setpoint = 0; //Intake
+  } else if(PestoLink.buttonHeld(D_LEFT)){
+    setpoint = 5; //Algae L2
+  } else if(PestoLink.buttonHeld(D_RIGHT)){
+    setpoint = 6; //Algae L3
+  } else if(PestoLink.buttonHeld(D_DOWN)){
+    setpoint = 7; //Processer
+  } else if(PestoLink.buttonHeld(D_UP)){
+    setpoint = 8; //Barge
+  } else if(PestoLink.buttonHeld(MID_RIGHT)){
+    setpoint = 9; //Stow
+  }
+  updateArm(setpoint);
+}
+
+void updateArm(int state){
+  angleI = positions[state][0];
+  angleII = positions[state][1];
+}
+
+void claw(){
 
 }
 
-void scoreCoral() {
-
-}
-
-void scoreAlgea(){
-
-}
-
-void intake() {
-
+void intake(){
+  if(PestoLink.buttonHeld(LEFT_BUMPER)){
+    intakeT = 1;
+  } else if(PestoLink.buttonHeld(LEFT_TRIGGER)){
+    intakeT = -1;
+  } else {
+    intakeT = 0;
+  }
 }
