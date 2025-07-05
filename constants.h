@@ -33,13 +33,9 @@ constexpr int positions[][2] = {
     {x, x},      // score barge
     {45, 135},   // stow angle
 };
-//claw intake Algea/stow
-constexpr float AI = x;
-//claw intake coral
-constexpr float CI = x;
+//claw intake/stow
+constexpr float stow = x;
 //claw grab Algea
-constexpr float AG = x;
-//claw grab Coral
-constexpr float CG = x;
+constexpr float grab = x;
 //
 #endif
