@@ -60,12 +60,9 @@ void loop() {
 
 void chassis() {
   if (lastPrintTime + 100 < millis()) {
-    Serial.printf("gyro yaw (radians): %.3f\r\n", NoU3.yaw * 1.145);
+    Serial.printf("gyro yaw (radians): %.3f\r\n", NoU3.yaw * angular_scale);
     lastPrintTime = millis();
   }
-
-
-
   // This measures your batteries voltage and sends it to PestoLink
   float batteryVoltage = NoU3.getBatteryVoltage();
   PestoLink.printBatteryVoltage(batteryVoltage);
@@ -91,6 +88,7 @@ void chassis() {
     NoU3.setServiceLight(LIGHT_ENABLED);
   } else {
     NoU3.setServiceLight(LIGHT_DISABLED);
+    drivetrain.holonomicDrive(0.0, 0.0, 0.0);
   }
 }
 

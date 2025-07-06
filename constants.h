@@ -27,7 +27,7 @@ constexpr float positions[][2] = {
     {31.3, 93.4},      // l2
     {40.1, 63.6},      // l3
     {58.3, 23.5},      // l4
-    [46.5], 87.38},      // algea l2
+    {46.5, 87.38},      // algea l2
     {54.5, 54.9},      // algae l3
     {99.0, 100.8},      // score processor
     {73.7, 0.0},      // score barge
