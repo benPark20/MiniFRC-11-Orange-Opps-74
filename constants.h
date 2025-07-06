@@ -21,21 +21,21 @@ constexpr int D_DOWN = 13;
 constexpr int D_LEFT = 14;
 constexpr int D_RIGHT = 15;
 //Servo Angles
-constexpr int positions[][2] = {
-    {45, 0},     // intake angle
-    {x, x},      // l1
-    {x, x},      // l2
-    {x, x},      // l3
-    {x, x},      // l4
-    {x, x},      // algea l2
-    {x, x},      // algae l3
-    {x, x},      // score processor
-    {x, x},      // score barge
-    {45, 135},   // stow angle
+constexpr float positions[][2] = {
+    {43.0, 180.0},     // intake angle
+    {52.6, 113.0},      // l1
+    {31.3, 93.4},      // l2
+    {40.1, 63.6},      // l3
+    {58.3, 23.5},      // l4
+    [46.5], 87.38},      // algea l2
+    {54.5, 54.9},      // algae l3
+    {99.0, 100.8},      // score processor
+    {73.7, 0.0},      // score barge
+    {50.0, 85.0},   // stow angle
 };
 //claw intake/stow
-constexpr float stow = x;
+constexpr float stow = 50.0;
 //claw grab Algea
-constexpr float grab = x;
+constexpr float grab = 0.0;
 //
 #endif

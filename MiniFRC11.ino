@@ -12,9 +12,9 @@ NoU_Motor intakeMotor(5);
 float intakeT = 0;
 
 NoU_Servo stageI(1);
-float angleI = positions[9][0];
+float angleI = 40.0;
 NoU_Servo stageII(2);
-float angleII = positions[9][1];
+float angleII = 140.0;
 NoU_Servo clawServo(3);
 float clawAngle = grab;
 
@@ -28,6 +28,7 @@ void setup() {
   Serial.begin(115200);
 
   NoU3.begin();
+  NoU3.setServiceLight(LIGHT_ENABLED);
 
   //The gyroscope sensor is by default precise, but not accurate. This is fixable by adjusting the angular scale factor.
   //Tuning procedure:
