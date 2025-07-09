@@ -21,8 +21,9 @@ constexpr int D_DOWN = 13;
 constexpr int D_LEFT = 14;
 constexpr int D_RIGHT = 15;
 //Servo Angles
+//max 210
 constexpr float positions[][2] = {
-    {43.0, 180.0},     // intake angle
+    {43.0, 205.0},     // intake angle
     {52.6, 113.0},      // l1
     {31.3, 93.4},      // l2
     {40.1, 63.6},      // l3
