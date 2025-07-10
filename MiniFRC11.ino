@@ -2,12 +2,12 @@
 #include <Alfredo_NoU3.h>
 #include <constants.h>
 
-// Motors                         // 654321 //
-NoU_Motor frontLeftMotor(5);      //5      4//
-NoU_Motor frontRightMotor(4);     //6      3//
-NoU_Motor rearLeftMotor(8);       //7      2//
-NoU_Motor rearRightMotor(1);      //8      1//
-NoU_Motor intakeMotor(3);         // USB-C  //
+// Motors                         //- 654321 +//
+NoU_Motor frontLeftMotor(1);      //5        4//
+NoU_Motor frontRightMotor(8);     //6        3//
+NoU_Motor backLeftMotor(4);       //7        2//
+NoU_Motor backRightMotor(5);      //8        1//
+NoU_Motor intakeMotor(3);         //+  USBC  -//
 
 // Servos
 NoU_Servo stageI(1);
@@ -26,7 +26,6 @@ float angular_scale;
 float measured_angle;
 
 // Drivetrain
-NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
 void setup() {
   PestoLink.begin("Team 74");
@@ -34,18 +33,10 @@ void setup() {
 
   NoU3.begin();
   NoU3.setServiceLight(LIGHT_ENABLED);
-  drivetrain.setMaximumOutput(0.8);
-  drivetrain.setMinimumOutput(0.3);
-  drivetrain.setInputDeadband(0.15);
 
   measured_angle = 31.416; // Tune this by spinning 5 full times
   angular_scale = (5.0 * 2.0 * PI) / measured_angle;
   NoU3.calibrateIMUs(); // Takes exactly 1 second
-
-  frontLeftMotor.setInverted(true);
-  rearLeftMotor.setInverted(true);
-  frontRightMotor.setInverted(false);
-  rearRightMotor.setInverted(false);
 }
 
 void loop() {
@@ -60,32 +51,51 @@ void loop() {
   clawServo.write(clawAngle);
 }
 
+float applyDeadband(float value, float deadband) {
+  if (fabs(value) < deadband) return 0;
+  return value;
+}
+
 void chassis() {
   if (PestoLink.update()) {
-    float driveY = -PestoLink.getAxis(1); // Forward/Backward
-    float driveX = PestoLink.getAxis(0);  // Strafing
-    float rotate = -PestoLink.getAxis(2); // Rotation
+    float y = -PestoLink.getAxis(1); // Remember, Y stick value is reversed
+    float x = PestoLink.getAxis(0);
+    float rx = PestoLink.getAxis(2);
 
-    //float heading = NoU3.yaw * angular_scale;
+    // Apply deadband to controller inputs
+    x = applyDeadband(x, 0.1);
+    y = applyDeadband(y, 0.1);
+    rx = applyDeadband(rx, 0.1);
 
-    //float cosA = cos(heading);
-    //float sinA = sin(heading);
+    float botHeading = NoU3.yaw * angular_scale;
 
-    //float robotX = driveX * cosA + driveY * sinA;
-    //float robotY = -driveX * sinA + driveY * cosA;
+    // Rotate the movement direction counter to the bot's rotation
+    float rotX = x * cos(-botHeading) - y * sin(-botHeading);
+    float rotY = x * sin(-botHeading) + y * cos(-botHeading);
 
-    drivetrain.holonomicDrive(driveX, driveY, rotate); //change to robot for field oriented
+    rotX = rotX * 1.1;  // Counteract imperfect strafing
 
-    // Battery voltage telemetry
-    float batteryVoltage = NoU3.getBatteryVoltage();
-    PestoLink.printBatteryVoltage(batteryVoltage);
+    float calc = fabs(rotY) + fabs(rotX) + fabs(rx);
+    float denominator = (calc >= 1) ? calc : 1.0;
+
+    float frontLeftPower = (rotY + rotX + rx) / denominator;
+    float backLeftPower = (rotY - rotX + rx) / denominator;
+    float frontRightPower = (rotY - rotX - rx) / denominator;
+    float backRightPower = (rotY + rotX - rx) / denominator;
+
+    frontLeftMotor.set(frontLeftPower);
+    backLeftMotor.set(backLeftPower);
+    frontRightMotor.set(frontRightPower);
+    backRightMotor.set(backRightPower);
     NoU3.setServiceLight(LIGHT_ENABLED);
   } else {
-    drivetrain.holonomicDrive(0, 0, 0);
+    frontLeftMotor.set(0);
+    backLeftMotor.set(0);
+    frontRightMotor.set(0);
+    backRightMotor.set(0);
     NoU3.setServiceLight(LIGHT_DISABLED);
   }
-} 
-
+}
 void arm() {
   if (PestoLink.buttonHeld(BUTTON_BOTTOM)) {
     setpoint = 1; PestoLink.printTerminal("L1");
