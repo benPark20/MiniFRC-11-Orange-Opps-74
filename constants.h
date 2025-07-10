@@ -35,7 +35,7 @@ constexpr float positions[][2] = {
     {50.0, 85.0},   // stow angle
 };
 //claw intake/stow
-constexpr float stow = 50.0;
+constexpr float stow = 100.0;
 //claw grab Algea
 constexpr float grab = 0.0;
 //

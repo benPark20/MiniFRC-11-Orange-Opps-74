@@ -16,8 +16,8 @@ NoU_Servo clawServo(3);
 
 // Global State
 float intakeT = 0;
-float angleI = 40.0; 
-float angleII = 140.0;
+float angleI = 45.0; 
+float angleII = 130.0;
 float clawAngle = grab;
 int setpoint = 0;
 int oldSetpoint = -1;
@@ -34,7 +34,12 @@ void setup() {
   NoU3.begin();
   NoU3.setServiceLight(LIGHT_ENABLED);
 
-  measured_angle = 31.416; // Tune this by spinning 5 full times
+  frontLeftMotor.setBrakeMode(true);
+  frontRightMotor.setBrakeMode(true);
+  backLeftMotor.setBrakeMode(true);
+  backRightMotor.setBrakeMode(true);
+
+  measured_angle = 32.8275; // Tune this by spinning 5 full times
   angular_scale = (5.0 * 2.0 * PI) / measured_angle;
   NoU3.calibrateIMUs(); // Takes exactly 1 second
 }
@@ -55,11 +60,11 @@ float tuneMotorPower(float input, float deadband, float minPower, float maxPower
   if (fabs(input) < deadband) return 0;
 
   float sign = (input >= 0) ? 1.0 : -1.0;
-  float curved = pow(fabs(input), exponent);            // Apply input shaping
-  float scaled = curved * maxPower;                     // Scale to max power
+  float curved = pow(fabs(input), exponent);
+  float scaled = curved * maxPower;
 
-  if (scaled < minPower) return 0;                      // Below motor stall? Zero it.
-  return sign * scaled;                                 // Return shaped output
+  if (scaled < minPower) return 0;
+  return sign * scaled;
 }
 
 
@@ -70,15 +75,15 @@ void chassis() {
     float rx = PestoLink.getAxis(2);
 
     // Drive tuning parameters
-    constexpr float DEADBAND = 0.125;
+    constexpr float DEADBAND = 0.1;
     constexpr float MIN_POWER = 0.4;
-    constexpr float MAX_POWER = 0.85;
+    constexpr float MAX_POWER = 0.75;
     constexpr float INPUT_EXPONENT = 1.4;  // Try 1.0 (linear), 2.0 (quadratic), etc.
 
     // Apply deadband & curve shaping to inputs before rotation math
-    x  = tuneMotorPower(x,  DEADBAND, 0, 1, INPUT_EXPONENT);
-    y  = tuneMotorPower(y,  DEADBAND, 0, 1, INPUT_EXPONENT);
-    rx = tuneMotorPower(rx, DEADBAND, 0, 1, INPUT_EXPONENT);
+    x  = tuneMotorPower(x,  DEADBAND, MIN_POWER, MAX_POWER, INPUT_EXPONENT);
+    y  = tuneMotorPower(y,  DEADBAND, MIN_POWER, MAX_POWER, INPUT_EXPONENT);
+    rx = tuneMotorPower(rx, DEADBAND, MIN_POWER, MAX_POWER, INPUT_EXPONENT);
 
     float botHeading = NoU3.yaw * angular_scale;
 
@@ -109,7 +114,6 @@ void chassis() {
     // Battery voltage telemetry
     float batteryVoltage = NoU3.getBatteryVoltage();
     PestoLink.printBatteryVoltage(batteryVoltage);
-
   } else {
     frontLeftMotor.set(0);
     backLeftMotor.set(0);
@@ -123,14 +127,14 @@ void chassis() {
 void arm() {
   if (PestoLink.buttonHeld(BUTTON_BOTTOM)) {
     setpoint = 1; PestoLink.printTerminal("L1");
-  } else if (PestoLink.buttonHeld(BUTTON_LEFT)) {
-    setpoint = 2; PestoLink.printTerminal("L2");
   } else if (PestoLink.buttonHeld(BUTTON_RIGHT)) {
+    setpoint = 2; PestoLink.printTerminal("L2");
+  } else if (PestoLink.buttonHeld(BUTTON_LEFT)) {
     setpoint = 3; PestoLink.printTerminal("L3");
   } else if (PestoLink.buttonHeld(BUTTON_TOP)) {
     setpoint = 4; PestoLink.printTerminal("L4");
   } else if (PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(LEFT_TRIGGER)) {
-    setpoint = 0; updateArm(setpoint); PestoLink.printTerminal("Intake");
+    setpoint = 0; PestoLink.printTerminal("Intake");
   } else if (PestoLink.buttonHeld(D_LEFT)) {
     setpoint = 5; PestoLink.printTerminal("Algae L2");
   } else if (PestoLink.buttonHeld(D_RIGHT)) {
@@ -140,12 +144,16 @@ void arm() {
   } else if (PestoLink.buttonHeld(D_UP)) {
     setpoint = 8; PestoLink.printTerminal("Barge");
   } else if (PestoLink.buttonHeld(MID_RIGHT)) {
-    setpoint = 9; updateArm(setpoint); PestoLink.printTerminal("Stow");
+    setpoint = 9; PestoLink.printTerminal("Stow");
   }
 
-  if (PestoLink.buttonHeld(RIGHT_TRIGGER) && setpoint != oldSetpoint) {
+  if (setpoint != oldSetpoint) {
     updateArm(setpoint);
     oldSetpoint = setpoint;
+  }
+  
+  if(PestoLink.buttonHeld(RIGHT_TRIGGER)){
+    angleII += 0.5;
   }
 }
 
@@ -155,7 +163,7 @@ void updateArm(int state) {
 }
 
 void claw() {
-  if (PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(RIGHT_TRIGGER)) {
+  if (PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(RIGHT_TRIGGER) || PestoLink.buttonHeld(LEFT_TRIGGER)) {
     clawAngle = stow;
   } else {
     clawAngle = grab;
