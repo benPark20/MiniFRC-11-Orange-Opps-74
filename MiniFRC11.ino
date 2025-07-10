@@ -51,43 +51,65 @@ void loop() {
   clawServo.write(clawAngle);
 }
 
-float applyDeadband(float value, float deadband) {
-  if (fabs(value) < deadband) return 0;
-  return value;
+float tuneMotorPower(float input, float deadband, float minPower, float maxPower, float exponent = 1.0) {
+  if (fabs(input) < deadband) return 0;
+
+  float sign = (input >= 0) ? 1.0 : -1.0;
+  float curved = pow(fabs(input), exponent);            // Apply input shaping
+  float scaled = curved * maxPower;                     // Scale to max power
+
+  if (scaled < minPower) return 0;                      // Below motor stall? Zero it.
+  return sign * scaled;                                 // Return shaped output
 }
+
 
 void chassis() {
   if (PestoLink.update()) {
-    float y = -PestoLink.getAxis(1); // Remember, Y stick value is reversed
+    float y = -PestoLink.getAxis(1);
     float x = PestoLink.getAxis(0);
     float rx = PestoLink.getAxis(2);
 
-    // Apply deadband to controller inputs
-    x = applyDeadband(x, 0.1);
-    y = applyDeadband(y, 0.1);
-    rx = applyDeadband(rx, 0.1);
+    // Drive tuning parameters
+    constexpr float DEADBAND = 0.125;
+    constexpr float MIN_POWER = 0.4;
+    constexpr float MAX_POWER = 0.85;
+    constexpr float INPUT_EXPONENT = 1.4;  // Try 1.0 (linear), 2.0 (quadratic), etc.
+
+    // Apply deadband & curve shaping to inputs before rotation math
+    x  = tuneMotorPower(x,  DEADBAND, 0, 1, INPUT_EXPONENT);
+    y  = tuneMotorPower(y,  DEADBAND, 0, 1, INPUT_EXPONENT);
+    rx = tuneMotorPower(rx, DEADBAND, 0, 1, INPUT_EXPONENT);
 
     float botHeading = NoU3.yaw * angular_scale;
 
-    // Rotate the movement direction counter to the bot's rotation
     float rotX = x * cos(-botHeading) - y * sin(-botHeading);
     float rotY = x * sin(-botHeading) + y * cos(-botHeading);
-
-    rotX = rotX * 1.1;  // Counteract imperfect strafing
+    rotX = rotX * 1.1;
 
     float calc = fabs(rotY) + fabs(rotX) + fabs(rx);
     float denominator = (calc >= 1) ? calc : 1.0;
 
-    float frontLeftPower = (rotY + rotX + rx) / denominator;
-    float backLeftPower = (rotY - rotX + rx) / denominator;
+    float frontLeftPower  = (rotY + rotX + rx) / denominator;
+    float backLeftPower   = (rotY - rotX + rx) / denominator;
     float frontRightPower = (rotY - rotX - rx) / denominator;
-    float backRightPower = (rotY + rotX - rx) / denominator;
+    float backRightPower  = (rotY + rotX - rx) / denominator;
+
+    // Apply motor output shaping after normalization
+    frontLeftPower  = tuneMotorPower(frontLeftPower, 0, MIN_POWER, MAX_POWER);
+    backLeftPower   = tuneMotorPower(backLeftPower,  0, MIN_POWER, MAX_POWER);
+    frontRightPower = tuneMotorPower(frontRightPower, 0, MIN_POWER, MAX_POWER);
+    backRightPower  = tuneMotorPower(backRightPower,  0, MIN_POWER, MAX_POWER);
 
     frontLeftMotor.set(frontLeftPower);
     backLeftMotor.set(backLeftPower);
     frontRightMotor.set(frontRightPower);
     backRightMotor.set(backRightPower);
     NoU3.setServiceLight(LIGHT_ENABLED);
+
+    // Battery voltage telemetry
+    float batteryVoltage = NoU3.getBatteryVoltage();
+    PestoLink.printBatteryVoltage(batteryVoltage);
+
   } else {
     frontLeftMotor.set(0);
     backLeftMotor.set(0);
@@ -96,6 +118,8 @@ void chassis() {
     NoU3.setServiceLight(LIGHT_DISABLED);
   }
 }
+
+
 void arm() {
   if (PestoLink.buttonHeld(BUTTON_BOTTOM)) {
     setpoint = 1; PestoLink.printTerminal("L1");
