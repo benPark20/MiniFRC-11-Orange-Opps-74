@@ -114,6 +114,10 @@ void chassis() {
     // Battery voltage telemetry
     float batteryVoltage = NoU3.getBatteryVoltage();
     PestoLink.printBatteryVoltage(batteryVoltage);
+
+    if(PestoLink.buttonHeld(MID_LEFT)){
+      NoU3.yaw=0; 
+    }
   } else {
     frontLeftMotor.set(0);
     backLeftMotor.set(0);
@@ -125,7 +129,7 @@ void chassis() {
 
 
 void arm() {
-  if (PestoLink.buttonHeld(BUTTON_BOTTOM)) {
+  if (PestoLink.buttonHeld(BUTTON_BOTTOM) || PestoLink.buttonHeld(RIGHT_TRIGGER) {
     setpoint = 1; PestoLink.printTerminal("L1");
   } else if (PestoLink.buttonHeld(BUTTON_RIGHT)) {
     setpoint = 2; PestoLink.printTerminal("L2");
@@ -143,17 +147,14 @@ void arm() {
     setpoint = 7; PestoLink.printTerminal("Processor");
   } else if (PestoLink.buttonHeld(D_UP)) {
     setpoint = 8; PestoLink.printTerminal("Barge");
-  } else if (PestoLink.buttonHeld(MID_RIGHT)) {
+  } else if (PestoLink.buttonHeld(MID_RIGHT))) {
     setpoint = 9; PestoLink.printTerminal("Stow");
   }
-
-  if (setpoint != oldSetpoint) {
-    updateArm(setpoint);
-    oldSetpoint = setpoint;
-  }
   
-  if(PestoLink.buttonHeld(RIGHT_TRIGGER)){
-    angleII += 0.5;
+  if(PestoLink.buttonHeld(RIGHT_BUMPER)){
+    angleI = 38.0;
+  } else {
+    updateArm(setpoint);
   }
 }
 

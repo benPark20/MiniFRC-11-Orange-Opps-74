@@ -12,8 +12,8 @@ constexpr int LEFT_BUMPER = 4;
 constexpr int RIGHT_BUMPER = 5;
 constexpr int LEFT_TRIGGER = 6;
 constexpr int RIGHT_TRIGGER = 7;
-constexpr int MID_RIGHT = 8;     //+
-constexpr int MID_LEFT = 9;      //-
+constexpr int MID_RIGHT = 9;     //+
+constexpr int MID_LEFT = 8;      //-
 constexpr int L_PRESS = 10;      //L Stick
 constexpr int R_PRESS = 11;      //R Stick
 constexpr int D_UP = 12;
@@ -23,7 +23,7 @@ constexpr int D_RIGHT = 15;
 //Servo Angles
 //max 210
 constexpr float positions[][2] = {
-    {43.0, 205.0},     // intake angle
+    {50.0, 205.0},     // intake angle
     {52.6, 113.0},      // l1
     {31.3, 93.4},      // l2
     {40.1, 63.6},      // l3
@@ -35,8 +35,8 @@ constexpr float positions[][2] = {
     {50.0, 85.0},   // stow angle
 };
 //claw intake/stow
-constexpr float stow = 100.0;
+constexpr float stow = 0.0;
 //claw grab Algea
-constexpr float grab = 0.0;
+constexpr float grab = 85.0;
 //
 #endif
