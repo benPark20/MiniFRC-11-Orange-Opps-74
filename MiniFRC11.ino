@@ -19,7 +19,7 @@ float intakeT = 0;
 float angleI = 45.0; 
 float angleII = 130.0;
 float clawAngle = grab;
-int setpoint = 0;
+int setpoint = 9;
 int oldSetpoint = -1;
 
 float angular_scale;
@@ -28,7 +28,7 @@ float measured_angle;
 // Drivetrain
 
 void setup() {
-  PestoLink.begin("Team 74");
+  PestoLink.begin("S.S. Squish");
   Serial.begin(115200);
 
   NoU3.begin();
@@ -129,7 +129,7 @@ void chassis() {
 
 
 void arm() {
-  if (PestoLink.buttonHeld(BUTTON_BOTTOM) || PestoLink.buttonHeld(RIGHT_TRIGGER) {
+  if (PestoLink.buttonHeld(BUTTON_BOTTOM)) {
     setpoint = 1; PestoLink.printTerminal("L1");
   } else if (PestoLink.buttonHeld(BUTTON_RIGHT)) {
     setpoint = 2; PestoLink.printTerminal("L2");
@@ -147,12 +147,15 @@ void arm() {
     setpoint = 7; PestoLink.printTerminal("Processor");
   } else if (PestoLink.buttonHeld(D_UP)) {
     setpoint = 8; PestoLink.printTerminal("Barge");
-  } else if (PestoLink.buttonHeld(MID_RIGHT))) {
+  } else if (PestoLink.buttonHeld(MID_RIGHT)) {
     setpoint = 9; PestoLink.printTerminal("Stow");
   }
   
   if(PestoLink.buttonHeld(RIGHT_BUMPER)){
-    angleI = 38.0;
+    angleI = positions[setpoint][0] - 10.0;
+  } else if(PestoLink.buttonHeld(RIGHT_TRIGGER)){
+    angleI = positions[setpoint][0] + 5.0;
+    angleII = positions[setpoint][1] + 30.0;
   } else {
     updateArm(setpoint);
   }
@@ -164,7 +167,7 @@ void updateArm(int state) {
 }
 
 void claw() {
-  if (PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(RIGHT_TRIGGER) || PestoLink.buttonHeld(LEFT_TRIGGER)) {
+  if (PestoLink.buttonHeld(LEFT_BUMPER) || PestoLink.buttonHeld(RIGHT_TRIGGER) || PestoLink.buttonHeld(LEFT_TRIGGER) || PestoLink.buttonHeld(L_PRESS)) {
     clawAngle = stow;
   } else {
     clawAngle = grab;
@@ -174,7 +177,7 @@ void claw() {
 void intake() {
   if (PestoLink.buttonHeld(LEFT_BUMPER)) {
     intakeT = 1;
-  } else if (PestoLink.buttonHeld(LEFT_TRIGGER)) {
+  } else if (PestoLink.buttonHeld(LEFT_TRIGGER) || PestoLink.buttonHeld(R_PRESS)) {
     intakeT = -1;
   } else {
     intakeT = 0;
