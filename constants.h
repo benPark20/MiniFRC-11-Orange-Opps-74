@@ -23,20 +23,15 @@ constexpr int D_RIGHT = 15;
 //Servo Angles
 //max 210
 constexpr float positions[][2] = {
-    {50.0, 205.0},     // intake angle  Stage 1: plus is more forward towards numbers
-    {52.6, 126.0},      // l1           Stage 2: plus is further down towards intaking
-    {49.3, 100.4},      // l2
+    {55.0, 200.0},     // intake angle  Stage 1: plus is more forward towards numbers
+    {52.6, 126.0},     // l1            Stage 2: plus is further down towards intaking
+    {49.3, 100.4},     // l2
     {55.1, 63.6},      // l3
     {59.0, 22.7},      // l4
-    {46.5, 87.38},      // algea l2
+    {46.5, 87.38},     // algea l2
     {54.5, 54.9},      // algae l3
-    {99.0, 100.8},      // score processor
-    {73.7, 0.0},      // score barge
-    {40.0, 160.0},   // stow angle
+    {99.0, 100.8},     // score processor
+    {73.7, 0.0},       // score barge
+    {40.0, 160.0},     // stow angle
 };
-//claw intake/stow
-constexpr float stow = 10.0;
-//claw grab Algea
-constexpr float grab = 78.0;
-//
 #endif
